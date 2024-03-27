@@ -4,7 +4,8 @@ require "optparse"
 # gm convert -size 400x400 xc:white -fill none -strokewidth 10 -stroke red -draw "rectangle 0,0 398,398" -font /usr/local/share/fonts/TradeMark\ Demo.otf -stroke black -pointsize 48 -draw "text 20,200 'hello'" output.png
 
 class Txt2Img
-    COLORS = ["black", "red", "blue", "green", "cyan", "magenta", "yellow"]
+    # COLORS = ["black", "red", "blue", "green", "cyan", "magenta", "yellow"]
+    COLORS = ["\"#FFBBDD\"","\"#DDEEAA\"","\"#AADDDD\"","\"#AABBEE\"","\"#EEEEEE\"","\"#99DDFF\"","\"#FFCC77\"","\"#CCAACC\"","\"#FFEE55\"","\"#EEFFDD\"","\"#AABBEE\"",]
     FONTS = [
         "Greenlight-Script",
         "HackGenConsoleNF-Regular",
@@ -57,22 +58,15 @@ class Txt2Img
 
     def default_opts
         @opts[:size] ||= [400, 400]
-        @opts[:strokewidth] ||= 10
+        @opts[:strokewidth] ||= 20
         @opts[:bordercolor] ||= COLORS.sample
         @opts[:font] ||= "\"KosugiMaru-Regular\""
-        @opts[:pointsize] ||= 48
-        @opts[:fgcolor] ||= "black"
+        @opts[:pointsize] ||= 24
+        @opts[:fgcolor] ||= "\"#444444\""
         self
     end
 
     def build
-        w, h = get_txt_rect
-
-        p [w, h]
-
-        posx = (@opts[:size][0] - w) / 2
-        posy = (@opts[:size][1] + h) / 2
-
         @cmd << "-size #{@opts[:size].join("x")}" if @opts[:size]
         @cmd << "xc:white"
         @cmd << "-fill none"
@@ -87,11 +81,11 @@ class Txt2Img
         @cmd << "-font #{@opts[:font]}" if @opts[:font]
         @cmd << "-fill #{@opts[:fgcolor]}" if @opts[:fgcolor]
         @cmd << "-stroke #{@opts[:fgcolor]}"
-        @cmd << "-strokewidth 1"
+        @cmd << "-strokewidth 2"
         @cmd << "-pointsize #{@opts[:pointsize]}" if @opts[:pointsize]
-        @cmd << "-density 100"
-        @cmd << "-draw \"text #{posx},#{posy} '#{@text}'\"" if @opts[:size]
+        @cmd << "-density 200"
         @cmd << "-gravity center"
+        @cmd << "-draw \"text 0,0 '#{@text}'\""
         @cmd << @outfile
         self
     end
