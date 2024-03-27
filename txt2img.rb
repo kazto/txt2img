@@ -50,6 +50,8 @@ class Txt2Img
         end
 
         default_opts
+        @outfile = ARGV[0]
+        @text = ARGV[1]
         self
     end
 
@@ -64,6 +66,13 @@ class Txt2Img
     end
 
     def build
+        w, h = get_txt_rect
+
+        p [w, h]
+
+        posx = (@opts[:size][0] - w) / 2
+        posy = (@opts[:size][1] + h) / 2
+
         @cmd << "-size #{@opts[:size].join("x")}" if @opts[:size]
         @cmd << "xc:white"
         @cmd << "-fill none"
@@ -81,8 +90,9 @@ class Txt2Img
         @cmd << "-strokewidth 1"
         @cmd << "-pointsize #{@opts[:pointsize]}" if @opts[:pointsize]
         @cmd << "-density 100"
-        @cmd << "-draw \"text 20,#{(@opts[:size][1] / 2).to_i} '#{ARGV[1]}'\"" if @opts[:size]
-        @cmd << ARGV[0]
+        @cmd << "-draw \"text #{posx},#{posy} '#{@text}'\"" if @opts[:size]
+        @cmd << "-gravity center"
+        @cmd << @outfile
         self
     end
 
@@ -92,30 +102,27 @@ class Txt2Img
 
     def get_txt_rect
         rect_cmd = ["gm convert"]
-        rect_cmd << "xc:white"
-        rect_cmd << "-background none"
-        rect_cmd << "-fill #{@opts[:fgcolor]}"
-        rect_cmd << "-size 1x1"
+        rect_cmd << "-fill none"
+        rect_cmd << "-background white"
+        rect_cmd << "-size 1000x1000"
         rect_cmd << "-font #{@opts[:font]}" if @opts[:font]
-#        rect_cmd << "-extent"
         rect_cmd << "-fill #{@opts[:fgcolor]}" if @opts[:fgcolor]
         rect_cmd << "-stroke #{@opts[:fgcolor]}"
         rect_cmd << "-strokewidth 1"
         rect_cmd << "-pointsize #{@opts[:pointsize]}" if @opts[:pointsize]
-        rect_cmd << "-draw \"text 0,0 '#{ARGV[0]}'\""
+        rect_cmd << "-density 100"
+        rect_cmd << "-draw \"text 1,100 '#{@text}'\""
+#        rect_cmd << "-gravity center"
+        rect_cmd << "xc:white"
         rect_cmd << "-trim"
-#        rect_cmd << ARGV[1]
-#        rect_cmd << ARGV[0]
-        rect_cmd << "info:text"
+        rect_cmd << "info:-"
 
         cmd = rect_cmd.join(" ")
-        puts cmd
         result = `#{cmd}`
-        p result
+        result.gsub(/.*=>/, "").split("+").first.split("x").map(&:to_i)
     end
 end
 
-=begin
 txt = Txt2Img.new
     .opt_parse
     .build
@@ -124,7 +131,5 @@ txt = Txt2Img.new
 puts txt
 system txt
 
-=end
-
-Txt2Img.new.opt_parse.get_txt_rect
+# Txt2Img.new.opt_parse.get_txt_rect
 
